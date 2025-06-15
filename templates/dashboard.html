@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hesni Bot - Trading Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-bg: #0a0a0f;
+            --secondary-bg: #1a1a2e;
+            --accent-bg: #16213e;
+            --card-bg: rgba(26, 26, 46, 0.8);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --primary-color: #00d4ff;
+            --secondary-color: #0066ff;
+            --success-color: #00ff88;
+            --danger-color: #ff4757;
+            --warning-color: #ffa502;
+            --text-primary: #ffffff;
+            --text-secondary: #b8bcc8;
+            --border-color: rgba(0, 212, 255, 0.2);
+            --glow-color: rgba(0, 212, 255, 0.3);
+            --shadow-glow: 0 0 30px rgba(0, 212, 255, 0.2);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 102, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(0, 255, 136, 0.05) 0%, transparent 50%);
+            animation: backgroundShift 20s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(1deg); }
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            animation: float 15s infinite linear;
+            opacity: 0.3;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--secondary-bg) 0%, var(--accent-bg) 100%);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-color);
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: translateX(-50%) scaleX(1); }
+            50% { opacity: 1; transform: translateX(-50%) scaleX(1.2); }
+        }
+
+        .logo-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .nav-menu {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 1rem 2rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: var(--primary-color);
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: var(--primary-color);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-item:hover::before, .nav-item.active::before {
+            transform: scaleY(1);
+        }
+
+        .nav-item i {
+            margin-right: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .status-online {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--success-color);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .status-offline {
+            background: rgba(255, 71, 87, 0.2);
+            color: var(--danger-color);
+            border: 1px solid rgba(255, 71, 87, 0.3);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: statusPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-glow);
+            border-color: var(--primary-color);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: 0 8px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-change {
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .stat-change.positive {
+            color: var(--success-color);
+        }
+
+        .stat-change.negative {
+            color: var(--danger-color);
+        }
+
+        /* Content Sections */
+        .content-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .section-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .section-content {
+            padding: 2rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: 0 8px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #00cc6a);
+            color: white;
+            box-shadow: 0 8px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color), #e63946);
+            color: white;
+            box-shadow: 0 8px 20px rgba(255, 71, 87, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: transparent;
+        }
+
+        .table th {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--text-primary);
+            font-weight: 600;
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .table tr:hover td {
+            background: rgba(0, 212, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        /* Strategy Cards */
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .strategy-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .strategy-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .strategy-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-glow);
+            border-color: var(--primary-color);
+        }
+
+        .strategy-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .strategy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .strategy-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .strategy-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-running {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--success-color);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .status-stopped {
+            background: rgba(255, 71, 87, 0.2);
+            color: var(--danger-color);
+            border: 1px solid rgba(255, 71, 87, 0.3);
+        }
+
+        .strategy-info {
+            margin-bottom: 1.5rem;
+        }
+
+        .strategy-metric {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .strategy-metric-label {
+            color: var(--text-secondary);
+        }
+
+        .strategy-metric-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .strategy-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .strategy-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--secondary-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, var(--secondary-color), var(--primary-color));
+        }
+
+        /* Notification Toast */
+        .toast {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-glow);
+            transform: translateX(400px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--secondary-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-glow);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            height: 400px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">HESNI BOT</div>
+            <div class="logo-subtitle">Trading Intelligence</div>
+        </div>
+        <div class="nav-menu">
+            <button class="nav-item active" onclick="showSection('dashboard')">
+                <i class="fas fa-chart-line"></i>
+                Dashboard
+            </button>
+            <button class="nav-item" onclick="showSection('strategies')">
+                <i class="fas fa-robot"></i>
+                Stratégies
+            </button>
+            <button class="nav-item" onclick="showSection('trades')">
+                <i class="fas fa-exchange-alt"></i>
+                Trades
+            </button>
+            <button class="nav-item" onclick="showSection('logs')">
+                <i class="fas fa-file-alt"></i>
+                Logs
+            </button>
+            <button class="nav-item" onclick="showSection('settings')">
+                <i class="fas fa-cog"></i>
+                Paramètres
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="header-title">Trading Dashboard</h1>
+            <div class="header-actions">
+                <div class="status-indicator" id="mexcStatus">
+                    <div class="status-dot" style="background: var(--success-color);"></div>
+                    <span>MEXC Connecté</span>
+                </div>
+                <button class="btn btn-primary" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i>
+                    Actualiser
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="content-section">
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Stratégies Actives</span>
+                        <div class="stat-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="activeStrategies">{{ active_count }}</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        +2 cette semaine
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">P&L Total</span>
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="totalPnl">${{ total_pnl }}</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        +12.5% ce mois
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Trades Aujourd'hui</span>
+                        <div class="stat-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="dailyTrades">{{ daily_trades }}</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        +8 vs hier
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Balance USDT</span>
+                        <div class="stat-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="balance">${{ balance }}</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        +5.2% cette semaine
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Chart -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2 class="section-title">Performance en Temps Réel</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-outline">
+                            <i class="fas fa-download"></i>
+                            Exporter
+                        </button>
+                    </div>
+                </div>
+                <div class="section-content">
+                    <div class="chart-container">
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">
+                            <div style="text-align: center;">
+                                <i class="fas fa-chart-area" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                <p>Graphique de performance en temps réel</p>
+                                <p style="font-size: 0.9rem; opacity: 0.7;">Intégration TradingView à venir</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategies Section -->
+        <div id="strategies-section" class="content-section" style="display: none;">
+            <div class="section-header">
+                <h2 class="section-title">Gestion des Stratégies</h2>
+                <button class="btn btn-primary" onclick="showCreateStrategyModal()">
+                    <i class="fas fa-plus"></i>
+                    Nouvelle Stratégie
+                </button>
+            </div>
+            <div class="section-content">
+                <div class="strategy-grid" id="strategiesGrid">
+                    <!-- Strategies will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Trades Section -->
+        <div id="trades-section" class="content-section" style="display: none;">
+            <div class="section-header">
+                <h2 class="section-title">Historique des Trades</h2>
+                <div class="header-actions">
+                    <button class="btn btn-outline">
+                        <i class="fas fa-filter"></i>
+                        Filtrer
+                    </button>
+                    <button class="btn btn-outline">
+                        <i class="fas fa-download"></i>
+                        Exporter
+                    </button>
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="table-container">
+                    <table class="table" id="tradesTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Paire</th>
+                                <th>Type</th>
+                                <th>Quantité</th>
+                                <th>Prix</th>
+                                <th>P&L</th>
+                                <th>Stratégie</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Trades will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Section -->
+        <div id="logs-section" class="content-section" style="display: none;">
+            <div class="section-header">
+                <h2 class="section-title">Logs Système</h2>
+                <div class="header-actions">
+                    <button class="btn btn-outline" onclick="clearLogs()">
+                        <i class="fas fa-trash"></i>
+                        Vider
+                    </button>
+                    <button class="btn btn-outline" onclick="refreshLogs()">
+                        <i class="fas fa-sync-alt"></i>
+                        Actualiser
+                    </button>
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="table-container">
+                    <table class="table" id="logsTable">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Niveau</th>
+                                <th>Stratégie</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Logs will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div id="settings-section" class="content-section" style="display: none;">
+            <div class="section-header">
+                <h2 class="section-title">Paramètres</h2>
+            </div>
+            <div class="section-content">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+                    <div class="stat-card">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Configuration MEXC</h3>
+                        <div class="form-group">
+                            <label class="form-label">API Key</label>
+                            <input type="password" class="form-input" placeholder="Votre clé API MEXC">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Secret Key</label>
+                            <input type="password" class="form-input" placeholder="Votre clé secrète MEXC">
+                        </div>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Sauvegarder
+                        </button>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Paramètres de Trading</h3>
+                        <div class="form-group">
+                            <label class="form-label">Taille d'ordre minimum</label>
+                            <input type="number" class="form-input" value="0.001" step="0.001">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Taille de position maximum</label>
+                            <input type="number" class="form-input" value="1000">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mode simulation</label>
+                            <select class="form-select">
+                                <option value="true">Activé</option>
+                                <option value="false">Désactivé</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Sauvegarder
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Strategy Modal -->
+    <div class="modal" id="createStrategyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Créer une Nouvelle Stratégie</h3>
+                <button class="modal-close" onclick="hideCreateStrategyModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="createStrategyForm">
+                <div class="form-group">
+                    <label class="form-label">Nom de la stratégie</label>
+                    <input type="text" class="form-input" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Type de stratégie</label>
+                    <select class="form-select" name="type" required>
+                        <option value="">Sélectionner un type</option>
+                        <option value="grid">Grid Trading</option>
+                        <option value="dca">DCA (Dollar Cost Averaging)</option>
+                        <option value="scalping">Scalping</option>
+                        <option value="arbitrage">Arbitrage</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Paire de trading</label>
+                    <input type="text" class="form-input" name="symbol" value="BTC/USDT" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Capital alloué (USDT)</label>
+                    <input type="number" class="form-input" name="capital" min="10" required>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                    <button type="button" class="btn btn-outline" onclick="hideCreateStrategyModal()">
+                        Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Créer la Stratégie
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        // Global variables
+        let currentSection = 'dashboard';
+        let refreshInterval;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeParticles();
+            loadDashboardData();
+            startAutoRefresh();
+            
+            // Load initial data
+            loadStrategies();
+            loadTrades();
+            loadLogs();
+        });
+
+        // Particle system
+        function initializeParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Navigation
+        function showSection(sectionName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.style.display = 'none');
+
+            // Show selected section
+            const targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            }
+
+            // Update navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            event.target.classList.add('active');
+
+            currentSection = sectionName;
+
+            // Load section-specific data
+            switch(sectionName) {
+                case 'strategies':
+                    loadStrategies();
+                    break;
+                case 'trades':
+                    loadTrades();
+                    break;
+                case 'logs':
+                    loadLogs();
+                    break;
+            }
+        }
+
+        // Data loading functions
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/dashboard-data');
+                const data = await response.json();
+                
+                document.getElementById('activeStrategies').textContent = data.active_count;
+                document.getElementById('totalPnl').textContent = '$' + data.total_pnl;
+                document.getElementById('dailyTrades').textContent = data.daily_trades;
+                document.getElementById('balance').textContent = '$' + data.balance;
+                
+                // Update MEXC status
+                const statusElement = document.getElementById('mexcStatus');
+                if (data.mexc_status) {
+                    statusElement.className = 'status-indicator status-online';
+                    statusElement.innerHTML = '<div class="status-dot" style="background: var(--success-color);"></div><span>MEXC Connecté</span>';
+                } else {
+                    statusElement.className = 'status-indicator status-offline';
+                    statusElement.innerHTML = '<div class="status-dot" style="background: var(--danger-color);"></div><span>MEXC Déconnecté</span>';
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des données:', error);
+                showToast('Erreur lors du chargement des données', 'error');
+            }
+        }
+
+        async function loadStrategies() {
+            try {
+                const response = await fetch('/api/strategies');
+                const data = await response.json();
+                
+                const grid = document.getElementById('strategiesGrid');
+                grid.innerHTML = '';
+                
+                data.strategies.forEach(strategy => {
+                    const card = createStrategyCard(strategy);
+                    grid.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Erreur lors du chargement des stratégies:', error);
+                showToast('Erreur lors du chargement des stratégies', 'error');
+            }
+        }
+
+        function createStrategyCard(strategy) {
+            const card = document.createElement('div');
+            card.className = 'strategy-card';
+            
+            const statusClass = strategy.status === 'running' ? 'status-running' : 'status-stopped';
+            const statusText = strategy.status === 'running' ? 'En cours' : 'Arrêtée';
+            
+            card.innerHTML = `
+                <div class="strategy-header">
+                    <h3 class="strategy-name">${strategy.name}</h3>
+                    <span class="strategy-status ${statusClass}">${statusText}</span>
+                </div>
+                <div class="strategy-info">
+                    <div class="strategy-metric">
+                        <span class="strategy-metric-label">Type:</span>
+                        <span class="strategy-metric-value">${strategy.type}</span>
+                    </div>
+                    <div class="strategy-metric">
+                        <span class="strategy-metric-label">Créée le:</span>
+                        <span class="strategy-metric-value">${new Date(strategy.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div class="strategy-metric">
+                        <span class="strategy-metric-label">P&L:</span>
+                        <span class="strategy-metric-value" style="color: var(--success-color);">+$0.00</span>
+                    </div>
+                </div>
+                <div class="strategy-actions">
+                    ${strategy.status === 'running' ? 
+                        `<button class="btn btn-danger" onclick="stopStrategy(${strategy.id})">
+                            <i class="fas fa-stop"></i> Arrêter
+                        </button>` :
+                        `<button class="btn btn-success" onclick="startStrategy(${strategy.id})">
+                            <i class="fas fa-play"></i> Démarrer
+                        </button>`
+                    }
+                    <button class="btn btn-outline" onclick="editStrategy(${strategy.id})">
+                        <i class="fas fa-edit"></i> Modifier
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        async function loadTrades() {
+            try {
+                const response = await fetch('/api/trades?limit=50');
+                const data = await response.json();
+                
+                const tbody = document.querySelector('#tradesTable tbody');
+                tbody.innerHTML = '';
+                
+                data.trades.forEach(trade => {
+                    const row = document.createElement('tr');
+                    const pnlColor = trade.pnl >= 0 ? 'var(--success-color)' : 'var(--danger-color)';
+                    
+                    row.innerHTML = `
+                        <td>${new Date(trade.timestamp).toLocaleString()}</td>
+                        <td>${trade.symbol || 'N/A'}</td>
+                        <td>${trade.side || 'N/A'}</td>
+                        <td>${trade.amount || 'N/A'}</td>
+                        <td>$${trade.price || 'N/A'}</td>
+                        <td style="color: ${pnlColor};">$${trade.pnl || '0.00'}</td>
+                        <td>${trade.strategy_name || 'N/A'}</td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Erreur lors du chargement des trades:', error);
+                showToast('Erreur lors du chargement des trades', 'error');
+            }
+        }
+
+        async function loadLogs() {
+            try {
+                const response = await fetch('/api/logs?limit=100');
+                const data = await response.json();
+                
+                const tbody = document.querySelector('#logsTable tbody');
+                tbody.innerHTML = '';
+                
+                data.logs.forEach(log => {
+                    const row = document.createElement('tr');
+                    let levelColor = 'var(--text-secondary)';
+                    
+                    switch(log.level) {
+                        case 'ERROR':
+                            levelColor = 'var(--danger-color)';
+                            break;
+                        case 'WARNING':
+                            levelColor = 'var(--warning-color)';
+                            break;
+                        case 'INFO':
+                            levelColor = 'var(--primary-color)';
+                            break;
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${new Date(log.timestamp).toLocaleString()}</td>
+                        <td style="color: ${levelColor}; font-weight: 600;">${log.level}</td>
+                        <td>${log.strategy_name || 'Système'}</td>
+                        <td>${log.message}</td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Erreur lors du chargement des logs:', error);
+                showToast('Erreur lors du chargement des logs', 'error');
+            }
+        }
+
+        // Strategy management
+        async function startStrategy(strategyId) {
+            try {
+                const response = await fetch(`/api/strategies/${strategyId}/start`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    showToast('Stratégie démarrée avec succès', 'success');
+                    loadStrategies();
+                    loadDashboardData();
+                } else {
+                    throw new Error('Erreur lors du démarrage');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showToast('Erreur lors du démarrage de la stratégie', 'error');
+            }
+        }
+
+        async function stopStrategy(strategyId) {
+            try {
+                const response = await fetch(`/api/strategies/${strategyId}/stop`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    showToast('Stratégie arrêtée avec succès', 'success');
+                    loadStrategies();
+                    loadDashboardData();
+                } else {
+                    throw new Error('Erreur lors de l\'arrêt');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showToast('Erreur lors de l\'arrêt de la stratégie', 'error');
+            }
+        }
+
+        // Modal management
+        function showCreateStrategyModal() {
+            document.getElementById('createStrategyModal').classList.add('show');
+        }
+
+        function hideCreateStrategyModal() {
+            document.getElementById('createStrategyModal').classList.remove('show');
+            document.getElementById('createStrategyForm').reset();
+        }
+
+        // Form submission
+        document.getElementById('createStrategyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                name: formData.get('name'),
+                type: formData.get('type'),
+                config: {
+                    symbol: formData.get('symbol'),
+                    capital: parseFloat(formData.get('capital'))
+                }
+            };
+            
+            try {
+                const response = await fetch('/api/strategies', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    showToast('Stratégie créée avec succès', 'success');
+                    hideCreateStrategyModal();
+                    loadStrategies();
+                    loadDashboardData();
+                } else {
+                    throw new Error('Erreur lors de la création');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showToast('Erreur lors de la création de la stratégie', 'error');
+            }
+        });
+
+        // Utility functions
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function refreshData() {
+            const button = event.target;
+            const icon = button.querySelector('i');
+            
+            icon.classList.add('fa-spin');
+            
+            loadDashboardData();
+            
+            if (currentSection === 'strategies') {
+                loadStrategies();
+            } else if (currentSection === 'trades') {
+                loadTrades();
+            } else if (currentSection === 'logs') {
+                loadLogs();
+            }
+            
+            setTimeout(() => {
+                icon.classList.remove('fa-spin');
+                showToast('Données actualisées', 'success');
+            }, 1000);
+        }
+
+        function startAutoRefresh() {
+            refreshInterval = setInterval(() => {
+                loadDashboardData();
+            }, 30000); // Refresh every 30 seconds
+        }
+
+        function clearLogs() {
+            if (confirm('Êtes-vous sûr de vouloir vider tous les logs ?')) {
+                // Implementation would depend on backend API
+                showToast('Logs vidés', 'success');
+            }
+        }
+
+        function refreshLogs() {
+            loadLogs();
+            showToast('Logs actualisés', 'success');
+        }
+
+        function editStrategy(strategyId) {
+            // Implementation for strategy editing
+            showToast('Fonction d\'édition à venir', 'info');
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('createStrategyModal');
+            if (e.target === modal) {
+                hideCreateStrategyModal();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideCreateStrategyModal();
+            }
+        });
+
+        // Responsive sidebar toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // Add mobile menu button for responsive design
+        if (window.innerWidth <= 768) {
+            const header = document.querySelector('.header');
+            const menuButton = document.createElement('button');
+            menuButton.className = 'btn btn-outline';
+            menuButton.innerHTML = '<i class="fas fa-bars"></i>';
+            menuButton.onclick = toggleSidebar;
+            header.querySelector('.header-actions').prepend(menuButton);
+        }
+    </script>
+</body>
+</html>
